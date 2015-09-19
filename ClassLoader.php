@@ -25,4 +25,30 @@ class ClassLoader{
     protected $composer;
 
 
+    /**
+     * create a new instance register composer
+     *
+     * @param Composer|null $composer
+     */
+    public function __construct(Composer $composer = null){
+        $this->setComposer($composer);
+    }
+
+    /**
+     * @return Composer
+     */
+    public function getComposer()
+    {
+        return $this->composer;
+    }
+
+    /**
+     * @param Composer $composer
+     * @return ClassLoader
+     */
+    public function setComposer(Composer $composer)
+    {
+        $this->composer = $composer;
+        return $this;
+    }
 }
