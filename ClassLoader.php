@@ -10,6 +10,7 @@
 
 namespace Anonym\Components\ClassLoader;
 
+use Exception;
 use Composer\Autoload\ClassLoader as Composer;
 
 /**
@@ -32,6 +33,13 @@ class ClassLoader
      * @var string
      */
     private $currentNamespace;
+
+    /**
+     * the class name of current process
+     *
+     * @var string
+     */
+    private $currentClass;
 
     /**
      * the type of array to finded namespaces
@@ -59,6 +67,10 @@ class ClassLoader
     public function findFile($class)
     {
 
+        if(!is_string($class)){
+            return false;
+        }
+
         $classMap = $this->getComposer()->getClassMap();
 
         // determine the name is exists in classmap
@@ -69,14 +81,48 @@ class ClassLoader
         if ($name = $this->isFindedBefore($class)) {
             return $name;
         } else {
-            return static::$findedNamespaces[$name] = $this->getComposer()->findFile($class);
+            $find = $this->getComposer()->findFile($class);
+            static::$findedNamespaces[$this->currentNamespace] = $this->parseFindedPath($find);
+            return $find;
         }
     }
 
+    /**
+     * parse finded path with slahes to namespace
+     *
+     * @param string $path
+     * @return string
+     */
+    private function parseFindedPath($path){
+        $parse = explode('/', $path);
 
+        $map = array_filter($parse, function($value){
+            if ('' !== $value) {
+                return $value;
+            }
+        });
+
+        $slice = array_slice($map, 0, count($map)-1);
+        return '/'.join('/', $slice);
+    }
+
+    /**
+     * find and load class file
+     *
+     * @param string $abstarct the name of class
+     * @return bool
+     */
     public function loadFile($abstarct)
     {
+        if($path = $this->findFile($abstarct)){
+            if (file_exists($path)) {
+                 \Composer\Autoload\includeFile($path);
 
+                return true;
+            }else{
+               # throw new Exception(sprintf('%s file is not found', $$path));
+            }
+        }
     }
     /**
      * if $class namespace is finded before, we will find it current path with find it's namespace
@@ -94,7 +140,7 @@ class ClassLoader
                 return false;
             }
 
-           return $this->findWithPsr4($namespace, $class) ?: $this->findWithPsr0($namespace, $class);
+           return $this->findWithPsr4($namespace, $this->currentClass) ?: $this->findWithPsr0($namespace, $this->currentClass);
         }else{
             return false;
         }
@@ -130,6 +176,7 @@ class ClassLoader
     {
         $namespaces = explode('\\', $abstract);
 
+        $this->currentClass = end($namespaces);
         // if namespace not exists return global namespace name
         if (count($namespaces) === 1) {
             return '';

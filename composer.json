@@ -21,7 +21,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Anonym\\Components\\ClassLoader\\": "src/Anonym/Components"
+      "Anonym\\Components\\ClassLoader\\": "."
     },
     "classmap": [
       "vendor"
