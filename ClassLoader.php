@@ -89,12 +89,30 @@ class ClassLoader
                 return false;
             }
 
-           return $this->findWithPsr4($namespace) ?: $this->findWithPsr0($namespace);
+           return $this->findWithPsr4($namespace, $class) ?: $this->findWithPsr0($namespace, $class);
         }else{
             return false;
         }
     }
 
+    /**
+     * find file local path with psr-4 fix standarts
+     *
+     * @param string $namespace the namespace of class
+     * @param string $abstract   the name of class
+     * @return bool|string
+     */
+    private function findWithPsr4($namespace, $abstract){
+        $class = $abstract.'.php';
+
+        $path = str_replace('\\', '/', $namespace).$class;
+        return file_exists($path) ? $path : false;
+    }
+
+    private function findWithPsr0($abstract){
+
+
+    }
     /**
      * find class namespace in class alias
      *
