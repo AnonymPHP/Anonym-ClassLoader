@@ -7,3 +7,5 @@
  *
  * Thanks for using
  */
+
+include 'vendor/composer/ClassLoader.php';
