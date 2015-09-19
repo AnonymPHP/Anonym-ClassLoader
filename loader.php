@@ -35,7 +35,7 @@ if ($classMap) {
     $composer->addClassMap($classMap);
 }
 
-$composer->register(true);
+$classloader = new ClassLoader($composer);
 
 // create anonym class loader instance
-return new ClassLoader($composer);
+return $classloader->register();
