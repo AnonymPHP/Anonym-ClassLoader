@@ -11,11 +11,13 @@
 namespace Anonym\Components\ClassLoader;
 
 use Composer\Autoload\ClassLoader as Composer;
+
 /**
  * Class ClassLoader
  * @package Anonym\Components
  */
-class ClassLoader{
+class ClassLoader
+{
 
     /**
      * the instance of composer
@@ -25,18 +27,26 @@ class ClassLoader{
     protected $composer;
 
     /**
+     * the namespace name of current proccess
+     *
+     * @var string
+     */
+    private $currentNamespace;
+
+    /**
      * the type of array to finded namespaces
      *
      * @var array
      */
-    protected $findedNamespaces;
+    protected static $findedNamespaces;
 
     /**
      * create a new instance register composer
      *
      * @param Composer|null $composer
      */
-    public function __construct(Composer $composer = null){
+    public function __construct(Composer $composer = null)
+    {
         $this->setComposer($composer);
     }
 
@@ -46,22 +56,57 @@ class ClassLoader{
      * @param string $class the real name of class
      * @return mixed
      */
-    public function findFile($class){
+    public function findFile($class)
+    {
 
         $classMap = $this->getComposer()->getClassMap();
 
         // determine the name is exists in classmap
-        if(isset($classMap[$class])){
+        if (isset($classMap[$class])) {
             return $classMap[$class];
         }
-
-        if($name = $this->isFindedBefore($class)){
+        $name = $this->isFindedBefore($class)
+        if ($name) {
             return $name;
-        }else{
-            return $this->getComposer()->findFile($class);
+        } else {
+            return static::$findedNamespaces[$name] = $this->getComposer()->findFile($class);
         }
     }
 
+    private function isFindedBefore($class = '')
+    {
+        if($namespace = $this->findNamespaceInClass($class)){
+
+            // if namespace dont found before, return false
+            if (!isset(self::$findedNamespaces[$namespace])) {
+                $this->currentNamespace = $namespace;
+                return false;
+            }
+
+
+
+        }else{
+            return false;
+        }
+    }
+
+    private function findNamespaceInClass($abstract)
+    {
+        $namespaces = explode('\\', $abstract);
+
+        // if namespace not exists return global namespace name
+        if (count($namespaces) === 1) {
+            return '';
+        }
+
+        if (count($namespaces) > 1) {
+            $parsedToNamespace = array_slice($namespaces, 0, count($namespaces)-1);
+
+            return join('\\', $parsedToNamespace).'\\';
+        }
+
+        return false;
+    }
 
     /**
      * Registers this instance as an autoloader.
