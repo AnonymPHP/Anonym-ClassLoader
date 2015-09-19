@@ -65,14 +65,20 @@ class ClassLoader
         if (isset($classMap[$class])) {
             return $classMap[$class];
         }
-        $name = $this->isFindedBefore($class)
-        if ($name) {
+
+        if ($name = $this->isFindedBefore($class)) {
             return $name;
         } else {
             return static::$findedNamespaces[$name] = $this->getComposer()->findFile($class);
         }
     }
 
+    /**
+     * if $class namespace is finded before, we will find it current path with find it's namespace
+     *
+     * @param string $class
+     * @return bool|string
+     */
     private function isFindedBefore($class = '')
     {
         if($namespace = $this->findNamespaceInClass($class)){
@@ -83,13 +89,18 @@ class ClassLoader
                 return false;
             }
 
-
-
+           return $this->findWithPsr4($namespace) ?: $this->findWithPsr0($namespace);
         }else{
             return false;
         }
     }
 
+    /**
+     * find class namespace in class alias
+     *
+     * @param string $abstract
+     * @return bool|string
+     */
     private function findNamespaceInClass($abstract)
     {
         $namespaces = explode('\\', $abstract);
