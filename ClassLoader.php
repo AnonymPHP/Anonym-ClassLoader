@@ -59,6 +59,24 @@ class ClassLoader
     }
 
     /**
+     * find and load class file
+     *
+     * @param string $abstarct the name of class
+     * @return bool
+     */
+    public function loadFile($abstarct)
+    {
+        if($path = $this->findFile($abstarct)){
+            if (file_exists($path)) {
+                \Composer\Autoload\includeFile($path);
+
+                return true;
+            }else{
+                # throw new Exception(sprintf('%s file is not found', $$path));
+            }
+        }
+    }
+    /**
      * find file with classmap or psr fix standarts and return it
      *
      * @param string $class the real name of class
@@ -82,46 +100,9 @@ class ClassLoader
             return $name;
         } else {
             $find = $this->getComposer()->findFile($class);
+
             static::$findedNamespaces[$this->currentNamespace] = $this->parseFindedPath($find);
             return $find;
-        }
-    }
-
-    /**
-     * parse finded path with slahes to namespace
-     *
-     * @param string $path
-     * @return string
-     */
-    private function parseFindedPath($path){
-        $parse = explode('/', $path);
-
-        $map = array_filter($parse, function($value){
-            if ('' !== $value) {
-                return $value;
-            }
-        });
-
-        $slice = array_slice($map, 0, count($map)-1);
-        return '/'.join('/', $slice);
-    }
-
-    /**
-     * find and load class file
-     *
-     * @param string $abstarct the name of class
-     * @return bool
-     */
-    public function loadFile($abstarct)
-    {
-        if($path = $this->findFile($abstarct)){
-            if (file_exists($path)) {
-                 \Composer\Autoload\includeFile($path);
-
-                return true;
-            }else{
-               # throw new Exception(sprintf('%s file is not found', $$path));
-            }
         }
     }
     /**
@@ -140,11 +121,37 @@ class ClassLoader
                 return false;
             }
 
-           return $this->findWithPsr4($namespace, $this->currentClass) ?: $this->findWithPsr0($namespace, $this->currentClass);
+
+            $namespace = substr($namespace, 0, strlen($namespace)-1);
+            return $this->findWithPsr4($namespace, $this->currentClass) ?: $this->findWithPsr0($namespace, $this->currentClass);
         }else{
             return false;
         }
     }
+
+    /**
+     * parse finded path with slahes to namespace
+     *
+     * @param string $path
+     * @return string
+     */
+    private function parseFindedPath($path){
+        $parse = explode('/', $path);
+
+        $map = [];
+        foreach($parse as $value){
+            if($value !== ''){
+                $map[] = $value;
+            }
+        }
+
+
+        $slice = array_slice($map, 0, count($map)-1);
+        return '/'.join('/', $slice);
+    }
+
+
+
 
     /**
      * find file local path with psr-4 fix standarts
@@ -158,7 +165,6 @@ class ClassLoader
 
         $path = str_replace('\\', '/', $namespace).$class;
 
-        var_dump($path);
         return file_exists($path) ? $path : false;
     }
 
