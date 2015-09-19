@@ -73,6 +73,11 @@ class ClassLoader
         }
     }
 
+
+    public function loadFile($abstarct)
+    {
+
+    }
     /**
      * if $class namespace is finded before, we will find it current path with find it's namespace
      *
@@ -106,6 +111,8 @@ class ClassLoader
         $class = $abstract.'.php';
 
         $path = str_replace('\\', '/', $namespace).$class;
+
+        var_dump($path);
         return file_exists($path) ? $path : false;
     }
 
@@ -141,18 +148,22 @@ class ClassLoader
      * Registers this instance as an autoloader.
      *
      * @param bool $prepend Whether to prepend the autoloader or not
+     * @return $this
      */
     public function register($prepend = false)
     {
         spl_autoload_register([$this, 'loadFile'], true, $prepend);
+        return $this;
     }
 
     /**
      * Unregisters this instance as an autoloader.
+     * @return $this
      */
     public function unregister()
     {
         spl_autoload_unregister([$this, 'loadFile']);
+        return $this;
     }
 
     /**
