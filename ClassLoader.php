@@ -121,7 +121,6 @@ class ClassLoader
                 return false;
             }
 
-
             $namespace = substr($namespace, 0, strlen($namespace)-1);
             return $this->findWithPsr4($namespace, $this->currentClass) ?: $this->findWithPsr0($namespace, $this->currentClass);
         }else{
