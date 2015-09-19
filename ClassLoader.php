@@ -24,6 +24,12 @@ class ClassLoader{
      */
     protected $composer;
 
+    /**
+     * the type of array to finded namespaces
+     *
+     * @var array
+     */
+    protected $findedNamespaces;
 
     /**
      * create a new instance register composer
@@ -32,6 +38,47 @@ class ClassLoader{
      */
     public function __construct(Composer $composer = null){
         $this->setComposer($composer);
+    }
+
+    /**
+     * find file with classmap or psr fix standarts and return it
+     *
+     * @param string $class the real name of class
+     * @return mixed
+     */
+    public function findFile($class){
+
+        $classMap = $this->getComposer()->getClassMap();
+
+        // determine the name is exists in classmap
+        if(isset($classMap[$class])){
+            return $classMap[$class];
+        }
+
+        if($name = $this->isFindedBefore($class)){
+            return $name;
+        }else{
+            return $this->getComposer()->findFile($class);
+        }
+    }
+
+
+    /**
+     * Registers this instance as an autoloader.
+     *
+     * @param bool $prepend Whether to prepend the autoloader or not
+     */
+    public function register($prepend = false)
+    {
+        spl_autoload_register([$this, 'loadFile'], true, $prepend);
+    }
+
+    /**
+     * Unregisters this instance as an autoloader.
+     */
+    public function unregister()
+    {
+        spl_autoload_unregister([$this, 'loadFile']);
     }
 
     /**
